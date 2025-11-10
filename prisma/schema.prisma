@@ -15,22 +15,47 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             Int           @id @default(autoincrement())
+  email          String        @unique
+  password       String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  tunnels  Tunnel[]
+  subscription   Subscription?
+  tunnels        Tunnel[]
+
+  @@index([email])
 }
 
 model Tunnel {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  subdomain String   @unique
-  targetUrl String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  name           String   @unique
+  url            String
+  userId         Int
+  isActive       Boolean  @default(false)
+  totalRequests  Int      @default(0)
+  totalBytes     BigInt   @default(0)
+  lastConnected  DateTime?
+  createdAt      DateTime @default(now())
+  disconnectedAt DateTime?
 
-  user User @relation(fields: [userId], references: [id])
-} 
+  user           User     @relation(fields: [userId], references: [id])
+
+  @@index([name])
+}
+
+model Subscription {
+  id             Int        @id @default(autoincrement())
+  userId         Int        @unique
+  plan           PlanLevel
+  expiresAt      DateTime?
+  createdAt      DateTime   @default(now())
+  user           User       @relation(fields: [userId], references: [id])
+}
+
+enum PlanLevel {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
